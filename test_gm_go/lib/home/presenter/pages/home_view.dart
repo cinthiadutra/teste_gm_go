@@ -33,11 +33,6 @@ class _HomeViewState extends State<HomeView> {
     }
   }
 
-  @override
-  void dispose() {
-    controller.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -104,9 +99,9 @@ class _HomeViewState extends State<HomeView> {
       body: PageView(
         controller: controller.pageController,
         physics: const NeverScrollableScrollPhysics(),
-        children: [
-          GoNowView(),
-          GoNowView(),
+        children:const [
+           GoNowView(),
+           GoNowView(),
         ],
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,

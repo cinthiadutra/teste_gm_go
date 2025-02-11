@@ -40,14 +40,20 @@ class _GoNowViewState extends State<GoNowView> {
         valueListenable: controller.listAll,
         builder: (context, state, _) {
           if (state.running) {
-            return Column(
-              children: [
-                CarroselWidget(moteis: controller.listAll.value.result ?? []),
-                const FilterWidget(),
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: 3,
-                    itemBuilder: (context, index) {
+            return CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(
+                  child: Column(
+                    children: [
+                      CarroselWidget(
+                          moteis: controller.listAll.value.result ?? []),
+                      const FilterWidget(),
+                    ],
+                  ),
+                ),
+                SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
                       return Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 8.0),
                         child: Shimmer.fromColors(
@@ -63,29 +69,37 @@ class _GoNowViewState extends State<GoNowView> {
                         ),
                       );
                     },
+                    childCount:
+                        3, // Ajuste para a quantidade desejada de itens de loading
                   ),
                 ),
               ],
             );
           }
 
+          // Verifica se houve erro ao buscar os dados
           if (state is Error) {
             return const Center(
               child: Text("Não há motéis para listar no momento!"),
             );
           }
 
+          // Quando os dados estão disponíveis e a lista não está vazia
           if (state is Ok<List<Motel>>) {
             final moteis = (state as Ok<List<Motel>>).value;
+            if (moteis.isEmpty) {
+              return const Center(
+                child: Text("Nenhum motel encontrado!"),
+              );
+            }
             return CustomScrollView(
               slivers: [
-                CarroselWidget(moteis: moteis),
-                SliverAppBar(
-                  pinned: true,
-                  automaticallyImplyLeading: false,
-                  flexibleSpace: FlexibleSpaceBar(
-                    title: const FilterWidget(),
-                    background: Container(color: Colors.white),
+                SliverToBoxAdapter(
+                  child: Column(
+                    children: [
+                      CarroselWidget(moteis: moteis),
+                      const FilterWidget(),
+                    ],
                   ),
                 ),
                 SliverList(
@@ -104,6 +118,7 @@ class _GoNowViewState extends State<GoNowView> {
             );
           }
 
+          // Retorna um contêiner vazio caso nenhum dos estados anteriores seja válido
           return const SizedBox.shrink();
         },
       ),

@@ -20,7 +20,7 @@ class ListSuiteCarouselWidget extends StatefulWidget {
 }
 
 class _ListSuiteCarouselStateWidget extends State<ListSuiteCarouselWidget> {
-  final HomeController _controller = HomeController(usercase: getIt.call());
+  final HomeController _controller = HomeController(repository: getIt.call());
 
   @override
   Widget build(BuildContext context) {

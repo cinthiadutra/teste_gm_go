@@ -14,7 +14,7 @@ class CarroselWidget extends StatefulWidget {
 }
 
 class _CarroselWidgetState extends State<CarroselWidget> {
-  final HomeController _homeController = HomeController(usercase: getIt.call());
+  final HomeController _homeController = HomeController(repository: getIt.call());
   final ValueNotifier<int> _currentPage = ValueNotifier(0);
 
   @override

@@ -1,16 +1,15 @@
-// ignore_for_file: invalid_use_of_protected_member
-
 import 'package:flutter/material.dart';
 import 'package:test_gm_go/home/data/models/motel.dart';
 import 'package:test_gm_go/home/data/models/result_state.dart';
-import 'package:test_gm_go/home/domain/usecases/home_usercase.dart';
+import 'package:test_gm_go/home/data/repository/home_repository.dart';
 
 class HomeController {
-  final HomeUsercase _usercase;
+  final HomeRepository _repository;
   final PageController _pageController = PageController();
   final Duration _duration = const Duration(milliseconds: 300);
   final Curve _curve = Curves.easeInOut;
   String capitalSelected = '';
+    bool _isDisposed = false;
 
   /// Estado da requisição de motéis
   ValueNotifier<ResultState<List<Motel>>> listAll =
@@ -26,45 +25,43 @@ class HomeController {
   int _currentIndex = 0;
   int get currentIndex => _currentIndex;
 
-  HomeController({required HomeUsercase usercase}) : _usercase = usercase;
+  HomeController({required HomeRepository repository})
+      : _repository = repository;
 
   PageController get pageController => _pageController;
 
   /// Inicializa o controller e busca os motéis
-  void initHomeController(int index) {
+  void initHomeController(int index) async {
     // Garantir que a navegação para a página aconteça após a tela ser montada
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _pageController.jumpToPage(index);
-      setIndex(index);
     });
 
-    getMotels();
+    await getMotels();
   }
 
-  /// Busca a lista de motéis e atualiza o estado
-  Future<void> getMotels() async {
+Future<void> getMotels() async {
+    if (_isDisposed) return;
+
     // Alterar o estado para "carregando"
-    if (!listAll.hasListeners) return; // Verifica se o ValueNotifier ainda está ativo
     listAll.value = ResultState(running: true);
 
     // Executando o UseCase
-    final result = await _usercase.execute();
+    final result = await _repository.getMotels();
+
+    if (_isDisposed) return;
+
     result.fold(
       (failure) {
         // Caso ocorra falha, atualizar o estado para erro
-        if (!listAll.hasListeners) return;
         listAll.value = ResultState(error: true, message: failure.toString());
       },
       (moteis) {
         // Se a resposta for bem-sucedida, atualizar o estado com a lista de motéis
-        if (!listAll.hasListeners) return;
         listAll.value = ResultState(result: moteis);
-        if (!listMoteis.hasListeners) return;
         listMoteis.value = List.from(moteis);
       },
-    );
-  }
-
+    );}
   /// Atualiza o índice atual e notifica mudanças
   void setIndex(int index) {
     _currentIndex = index;
@@ -93,15 +90,9 @@ class HomeController {
     }
   }
 
-  /// Libera recursos ao encerrar o controller
-  void dispose() {
-    _pageController.dispose();
-    listAll.dispose();
-    listMoteis.dispose();
-    isSelectedNow.dispose();
-  }
 
-  List<String> brazilStates = [
+
+   List<String> brazilStates = [
     'Acre',
     'Alagoas',
     'Amapá',
@@ -129,4 +120,12 @@ class HomeController {
     'Sergipe',
     'Tocantins'
   ];
+
+  void dispose() {
+    _isDisposed = true;
+    _pageController.dispose();
+    listMoteis.dispose();
+    isSelectedNow.dispose();
+  }
+
 }

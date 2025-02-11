@@ -15,7 +15,7 @@ class ImageSelectionView extends StatefulWidget {
 }
 
 class _ImageSelectionViewState extends State<ImageSelectionView> {
-  final controller = HomeController(usercase: getIt.call());
+  final controller = HomeController(repository: getIt.call());
 
   @override
   void initState() {
